@@ -1,38 +1,62 @@
-import { Controller, Post, Body, Get, Param, Patch, Delete } from "@nestjs/common";
-import { ProductService } from "./product.service";
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Patch,
+  Delete,
+} from '@nestjs/common';
+import { ProductService } from './product.service';
 
 @Controller('products')
 export class ProductController {
+  constructor(private readonly productsService: ProductService) {}
 
-    constructor(private readonly productsService: ProductService) { }
+  @Post()
+  async addProduct(
+    @Body('title') prodTitle: string,
+    @Body('description') prodDescription: string,
+    @Body('price') prodPrice: number,
+  ) {
+    const generatedId = await this.productsService.insertProduct(
+      prodTitle,
+      prodDescription,
+      prodPrice,
+    );
+    return { id: generatedId };
+  }
 
-    @Post()
-    async addProduct(@Body('title') prodTitle: string, @Body('description') prodDescription: string, @Body('price') prodPrice: number){
-        const generatedId = await this.productsService.insertProduct(prodTitle, prodDescription, prodPrice);
-        return { id: generatedId };
-    }
-    
-    @Get()
-    getAllProducts(){
-        return this.productsService.fetchProducts();
-    }
+  @Get()
+  async getAllProducts() {
+    const products = await this.productsService.fetchProducts();
+    return products;
+  }
 
-    @Get(':id')
-    getSingleProduct(@Param('id') prodId:string){
-       return this.productsService.getSingleProduct(prodId);
-    }
-      
-    @Patch(':id')
-    updateProduct(@Param('id') prodId:string, @Body('title') prodTitle:string, 
-    @Body('description') prodDescription:string,  @Body('price') prodPrice:number,){
-        this.productsService.updateProduct(prodId, prodTitle, prodDescription, prodPrice);
-        return null;
-    }
+  @Get(':id')
+  getSingleProduct(@Param('id') prodId: string) {
+    return this.productsService.getSingleProduct(prodId);
+  }
 
-    @Delete(':id')
-    removeProduct(@Param('id') prodId:string){
-        this.productsService.deleteProduct(prodId);
-        return null;
-    }
+  @Patch(':id')
+  async updateProduct(
+    @Param('id') prodId: string,
+    @Body('title') prodTitle: string,
+    @Body('description') prodDescription: string,
+    @Body('price') prodPrice: number,
+  ) {
+    await this.productsService.updateProduct(
+      prodId,
+      prodTitle,
+      prodDescription,
+      prodPrice,
+    );
+    return null;
+  }
 
+  @Delete(':id')
+  async removeProduct(@Param('id') prodId: string) {
+    await this.productsService.deleteProduct(prodId);
+    return null;
+  }
 }
